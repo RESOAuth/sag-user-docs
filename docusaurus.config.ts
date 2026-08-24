@@ -6,8 +6,8 @@ import { themes as prismThemes } from 'prism-react-renderer';
 // Where the built site will be served from. Override both when moving to a
 // custom domain: SITE_URL=https://sag.resoauth.dev SITE_BASE_URL=/ npm run build
 // (and add a static/CNAME file containing the hostname).
-const url = process.env.SITE_URL ?? 'https://resoauth.github.io';
-const baseUrl = process.env.SITE_BASE_URL ?? '/sag-docs/';
+const url = process.env.SITE_URL ?? 'https://sag.resoauth.dev';
+const baseUrl = process.env.SITE_BASE_URL ?? '/';
 
 // Cut versions, newest first, straight from the file Docusaurus maintains.
 // Reading it here rather than repeating the number means `npm run cut-version
