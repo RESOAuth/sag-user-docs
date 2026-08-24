@@ -39,8 +39,8 @@ jobs:
         env:
           # Override both when moving to a custom domain, and add a
           # static/CNAME file holding the hostname.
-          SITE_URL: https://resoauth.github.io
-          SITE_BASE_URL: /sag-docs/
+          SITE_URL: https://sag.resoauth.dev
+          SITE_BASE_URL: /
 
       - uses: actions/upload-pages-artifact@v3
         with:
