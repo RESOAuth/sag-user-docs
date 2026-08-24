@@ -1,0 +1,79 @@
+/**
+ * SAG documentation theme.
+ *
+ * A deliberately quiet palette: this is a site about an identity gateway, and
+ * the pages people land on are mostly tables of environment variables. Colour
+ * is used to mark state (a warning, a version banner), not for decoration.
+ */
+
+:root {
+  --ifm-color-primary: #1f5f8b;
+  --ifm-color-primary-dark: #1c567d;
+  --ifm-color-primary-darker: #1a5176;
+  --ifm-color-primary-darkest: #154361;
+  --ifm-color-primary-light: #226899;
+  --ifm-color-primary-lighter: #246da0;
+  --ifm-color-primary-lightest: #297bb5;
+
+  --ifm-code-font-size: 92%;
+  --ifm-font-family-base: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --ifm-font-family-monospace: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;
+
+  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.08);
+
+  --sag-announcement-bg: #eef4f9;
+  --sag-announcement-fg: #14364d;
+  --sag-table-header-bg: #f4f6f8;
+}
+
+[data-theme='dark'] {
+  --ifm-color-primary: #7cbde4;
+  --ifm-color-primary-dark: #5fafdf;
+  --ifm-color-primary-darker: #50a8dc;
+  --ifm-color-primary-darkest: #2790cf;
+  --ifm-color-primary-light: #99cbe9;
+  --ifm-color-primary-lighter: #a8d2ec;
+  --ifm-color-primary-lightest: #d4e9f6;
+
+  --docusaurus-highlighted-code-line-bg: rgba(255, 255, 255, 0.12);
+
+  --sag-announcement-bg: #17293a;
+  --sag-announcement-fg: #d7e7f3;
+  --sag-table-header-bg: #23272f;
+}
+
+/* Configuration tables are the most-read pages on the site and are often
+   three columns of variable, default, and prose. Left-align everything, let
+   the prose column take the slack, and never wrap a variable name. */
+.markdown table {
+  display: table;
+  width: 100%;
+}
+
+.markdown table th {
+  background-color: var(--sag-table-header-bg);
+  text-align: left;
+}
+
+.markdown table td:first-child code,
+.markdown table th:first-child code {
+  white-space: nowrap;
+}
+
+/* Wide tables scroll inside themselves rather than pushing the page sideways. */
+.markdown > table,
+.markdown .table-wrapper {
+  overflow-x: auto;
+  display: block;
+}
+
+/* The version banner is the whole reason for choosing this generator; make it
+   read as a notice rather than as page furniture. */
+.theme-doc-version-banner {
+  border-left: 4px solid var(--ifm-color-primary);
+}
+
+.announcementBar_content {
+  font-size: 0.9rem;
+  padding: 0.2rem 0;
+}

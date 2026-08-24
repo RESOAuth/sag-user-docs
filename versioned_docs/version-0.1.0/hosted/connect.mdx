@@ -1,0 +1,127 @@
+---
+sidebar_label: "Connect an application"
+sidebar_position: 2
+description: "Point any OpenID Connect library at auth.resoauth.cloud: discovery, the authorisation code flow with PKCE, and what to check before going live."
+---
+
+import Endpoints from '@site/docs/_snippets/_endpoints.md';
+
+# Connect an application
+
+SAG is a standard OpenID Connect provider. If your framework already has an
+OpenID Connect client, you are configuring it, not writing an integration.
+
+## 1. Point your library at discovery
+
+```
+https://auth.resoauth.cloud/.well-known/openid-configuration
+```
+
+That one URL is the whole configuration. It tells your library the
+authorisation endpoint, the token endpoint, where the signing keys live, and
+which algorithms and scopes this instance actually supports.
+
+Read it rather than hard-coding what it says. The discovery document describes
+the running instance, not the software: a claim it does not list is a claim
+you will not get.
+
+## 2. Get a client id
+
+Publish a [Client ID Metadata Document](./client-id-metadata.md). Your
+`client_id` is an `https` URL that serves your application's own metadata.
+Nothing is registered with anybody, and this is the only route on the shared
+hosted gateway today.
+
+If your application needs to authenticate at the token endpoint, publish a
+`jwks_uri` in the document and use `private_key_jwt` rather than a shared
+secret. If none of that fits your application,
+[get in touch](../support/index.md).
+
+## 3. Use the authorisation code flow with PKCE
+
+SAG accepts the authorisation code flow only, and PKCE is required. There is
+no implicit flow and no hybrid flow, because OAuth 2.1 removed both.
+
+```
+GET https://auth.resoauth.cloud/authorize
+  ?response_type=code
+  &client_id=https://ledger.example.com/oauth-client
+  &redirect_uri=https://ledger.example.com/auth/callback
+  &scope=openid%20email
+  &state=<random, tied to the browser session>
+  &nonce=<random, checked in the id_token>
+  &code_challenge=<S256 of your verifier>
+  &code_challenge_method=S256
+```
+
+The person signs in, and SAG redirects back to your `redirect_uri` with
+`code` and `state`. Exchange the code at `/token`:
+
+```sh
+curl -X POST https://auth.resoauth.cloud/token \
+  -d grant_type=authorization_code \
+  -d code=... \
+  -d redirect_uri=https://ledger.example.com/auth/callback \
+  -d client_id=https://ledger.example.com/oauth-client \
+  -d code_verifier=...
+```
+
+You get back an `id_token` and a short-lived access token. Verify the
+`id_token` against `/.well-known/jwks.json`, and check `iss`, `aud`, `exp`,
+and the `nonce` you sent. Any competent library does this for you. See
+[tokens and claims](./tokens-and-claims.md) for what is inside.
+
+**Redirect URIs are matched exactly.** No prefixes, no wildcards. OAuth 2.1
+removed loose matching because every variant of it has been used to send an
+authorisation code to somebody else's page. The one exception is the loopback
+port for native applications, which RFC 8252 requires to be ignored.
+
+## 4. Ask for the scopes you need
+
+| Scope | Gets you |
+| --- | --- |
+| `openid` | Required. Without it the request is refused |
+| `email` | `email` and `email_verified` |
+| `profile` | Name, picture, and locale, when an upstream provides them |
+
+`offline_access` is accepted and does nothing: there are no refresh tokens.
+Ask for the smallest set that works. `profile` is only advertised when the
+instance can actually fill it, so read discovery rather than assuming.
+
+## The endpoints
+
+Everything below is relative to `https://auth.resoauth.cloud`.
+
+<Endpoints />
+
+## Before you go live
+
+- **Verify the `id_token` signature.** Against the published JWKS, every time.
+  Do not trust a token because it arrived over TLS.
+- **Check `nonce` and `state`.** Your library probably does. Confirm it.
+- **Decide what `sub` means to you.** It is derived from the verified email
+  address, so a person who changes address becomes a different `sub`. This is
+  a deliberate choice, explained in
+  [ADR 0011](https://github.com/RESOAuth/smart-access-gateway/blob/main/docs/adr/0011-subject-derived-from-the-verified-address.md).
+- **Decide whether an email code is good enough.** If parts of your
+  application need more, demand it explicitly rather than hoping. See
+  [asking for a stronger sign-in](./assurance.md).
+- **Handle sign-out.** `/logout` may ask the person to confirm, because a
+  session can be shared with other applications. See
+  [the sign-in experience](./sign-in.md).
+
+## A worked example
+
+SAG ships a small relying party that serves its own metadata document and
+signs in with it. It is the shortest complete example there is:
+
+```sh
+git clone https://github.com/RESOAuth/smart-access-gateway
+cd smart-access-gateway
+EXAMPLE_USE_CIMD_AND_PUBLIC_CLIENT=1 npm run example
+```
+
+The source is
+[examples/relying-party/server.js](https://github.com/RESOAuth/smart-access-gateway/blob/main/examples/relying-party/server.js).
+By default it points at a local SAG; set its issuer to
+`https://auth.resoauth.cloud` to try the hosted one.
