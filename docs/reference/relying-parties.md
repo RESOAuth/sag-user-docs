@@ -101,17 +101,26 @@ has to be registered anywhere: the document's URL *is* the identity, so only
 somebody controlling that origin can change what the client claims to be.
 
 ```sh
-CLIENTS_CIMD_ENABLED=true                       # the default
-CLIENTS_CIMD_ALLOWED_DOMAINS=example.com        # empty means any
+CLIENTS_CIMD_ENABLED=true
+CLIENTS_CIMD_ALLOWED_DOMAINS=example.com
 CLIENTS_CIMD_ALLOW_SUBDOMAINS=true
 CLIENTS_CIMD_CACHE_TTL=300
 CLIENTS_CIMD_MAX_BYTES=32768
 ```
 
-SAG requires the document to claim its own URL as `client_id`, requires every
-redirect URI to share the document's origin, refuses redirects while fetching
-it, and caps its size. Those four rules are what stop a published document
-sending codes somewhere else.
+SAG requires at least one well-formed redirect URI. The allow list is an
+explicit trust boundary: a permitted domain may declare its own redirect URIs,
+including loopback URIs for native applications. Leave it empty only when the
+deployment deliberately accepts metadata from any origin. SAG refuses redirects
+while fetching the document and caps its size. These rules limit both where SAG
+will fetch metadata from and how much of it it will read.
+
+SAG uses the URL it fetched as the client ID. A document may declare a different
+`client_id`, for example when a native application's metadata is published on
+the web but its redirect URI is on localhost. A `jwks_uri`, when present, must
+share the document's origin.
+
+In production, CIMD is disabled until `CLIENTS_CIMD_ENABLED=true` is set.
 
 Such a client is public by construction - the document is readable by anybody,
 so it can hold no secret - which is why PKCE is required of it regardless of
@@ -162,3 +171,12 @@ acr_values=urn:sag:acr:federated-mfa
 asks, which is how an enterprise deployment stops one application from being
 the weak way in. See the `acr` and `amr` values in
 [Configuration](configuration.md).
+
+## Prompt behaviour
+
+An omitted or blank `prompt` is treated as `prompt=consent`. With the default
+`PROMPT_CONSENT_MODE=continue`, SAG shows the person which account will
+continue when it can use an existing session. Send `prompt=none` explicitly
+when a relying party requires a transparent response; SAG then returns
+`login_required` rather than showing a page if it cannot complete from the
+session.

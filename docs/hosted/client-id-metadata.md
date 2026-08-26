@@ -30,22 +30,22 @@ Serve this at `https://ledger.example.com/oauth-client`, with
 
 Then use that URL as your `client_id`. That is the entire onboarding process.
 
-## The four rules
+## The rules
 
-SAG will refuse a document that breaks any of these. Together they are what
-stops a published document sending authorisation codes somewhere else.
+SAG will refuse a document that breaks any of these:
 
-1. **The document must claim its own URL.** The `client_id` inside must equal
-   the URL it was fetched from, exactly. A document cannot speak for a
-   `client_id` it does not live at.
-2. **Every redirect URI must share the document's origin.** Same scheme, host,
-   and port. You cannot publish a document at your domain that redirects to
-   somebody else's.
+1. **The URL is the client ID.** SAG uses the URL it fetched as your client
+   ID. The `client_id` field is optional and may name a different client, such
+   as a native application that redirects to localhost.
+2. **There must be a well-formed redirect URI.** It is matched exactly when
+   SAG returns an authorisation code. A metadata publisher is trusted to
+   declare where its own codes go.
 3. **No redirects while fetching.** SAG will not follow one. If it did, an
-   open redirect anywhere on your origin would become a way to serve a
-   document from elsewhere under your name.
+   open redirect could make a permitted URL serve metadata from elsewhere.
 4. **There is a size cap.** The document is small by nature, and a cap means a
    hostile or broken URL cannot be used to exhaust the fetcher.
+5. **A `jwks_uri` stays on your origin.** This stops the metadata document
+   making SAG fetch token-authentication keys from somewhere else.
 
 ## Such a client is public
 

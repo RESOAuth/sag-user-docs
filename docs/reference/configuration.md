@@ -19,7 +19,7 @@ Relying party and upstream provider variables have their own pages:
 
 | Variable | Default | Meaning |
 | --- | --- | --- |
-| `SAG_ISSUER` | derived from the request in development | The `iss` claim and the base for every URL. No trailing slash, no query |
+| `SAG_ISSUER` | derived from the request in development | The `iss` claim and the base for every URL. An `http` or `https` URL with a host, no username, password, query, or fragment. SAG removes trailing slashes |
 | `SAG_SECRET` | a well-known development value | Master secret. 48 random bytes. Protects sessions, transactions and codes |
 | `SAG_SECRET_PREVIOUS` | - | The secret being retired, so a rotation does not sign everybody out. See [Operations](../self-host/operations.md) |
 | `SAG_DEV` | true for localhost, `.localhost`, `.local` and `.linux.test` issuers | Forces development mode on or off |
@@ -36,8 +36,12 @@ Relying party and upstream provider variables have their own pages:
 | `SIGNING_PRIVATE_KEY_PEM` | - | The same thing in PEM |
 | `SIGNING_KMS_KEY_ID`, `SIGNING_KMS_REGION` | - | With `aws-kms` |
 | `HSM_BINDING`, `HSM_URL`, `HSM_SHARED_SECRET` | `HSM` | With `cloudflare-hsm`. See [Deployment](../self-host/deployment.md) |
-| `SIGNING_PUBLIC_JWKS_EXTRA` | `[]` | Extra public keys to publish, for a migration in progress |
+| `SIGNING_PUBLIC_JWKS_EXTRA` | `[]` | Extra public keys to publish with the local or AWS KMS signer, for a migration in progress. The Cloudflare HSM publishes the keys it holds instead |
 | `REQUIRE_POST_QUANTUM_SIGNING` | `false` | Refuse to start unless a post-quantum algorithm is configured. The older `SIGNING_REQUIRE_POST_QUANTUM` name still works |
+
+There is one active private signing key per algorithm. `SIGNING_ADDITIONAL_ALGS`
+supports an algorithm migration, not a two-key overlap of the same algorithm.
+See [Operations](../self-host/operations.md) before rotating a signing key.
 
 ## Peer deployments (JWKS federation)
 
@@ -65,7 +69,7 @@ fully as this instance's own.
 | `SESSION_TTL` | `43200` (12 hours) | Idle timeout |
 | `SESSION_MAX_LIFETIME` | `604800` (7 days) | Absolute lifetime, regardless of activity |
 | `PROMPT_NONE_SHARED_SESSION` | `true` | Whether `prompt=none` may be answered from the shared session when sessions are per relying party |
-| `PROMPT_CONSENT_MODE` | `continue` | `continue` shows "continue as ..."; `off` ignores `prompt=consent` |
+| `PROMPT_CONSENT_MODE` | `continue` | `continue` shows "continue as ..." for `prompt=consent` and an omitted `prompt`; `off` ignores consent requests |
 | `LOGOUT_CONFIRM` | `auto` | `auto` asks when the session is shared, `always`, `never` |
 
 ## Tokens and codes
@@ -185,8 +189,8 @@ bucket, all of it local.
 | `CLIENTS_STORE_PREFIX` | `clients/`, or empty with `file` | Key prefix within the store |
 | `CLIENTS_STORE_CACHE_TTL` | `60` | Seconds a record is cached. "No such client" is cached too, but for at most ten seconds, so a record added a moment ago is not refused for a minute |
 | `CLIENTS_OPAQUE_ENABLED` | `true` | Whether store-held clients are accepted at all |
-| `CLIENTS_CIMD_ENABLED` | `true` | Client ID Metadata Documents |
-| `CLIENTS_CIMD_ALLOWED_DOMAINS` | - | Empty means any origin |
+| `CLIENTS_CIMD_ENABLED` | Development mode | Client ID Metadata Documents. Production deployments must enable it explicitly. |
+| `CLIENTS_CIMD_ALLOWED_DOMAINS` | - | Empty accepts metadata from any origin. Each listed domain may declare its own redirect URIs. |
 | `CLIENTS_CIMD_ALLOW_SUBDOMAINS` | `true` | |
 | `CLIENTS_CIMD_CACHE_TTL` | `300` | |
 | `CLIENTS_CIMD_MAX_BYTES` | `32768` | Size cap on a fetched document |

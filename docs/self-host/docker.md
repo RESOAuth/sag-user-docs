@@ -61,9 +61,13 @@ CLIENT_LEDGER_REDIRECT_URIS=https://ledger.example.com/auth/callback
 Restart to apply: `docker compose restart sag`. Every variable is in
 [Configuration](../reference/configuration.md).
 
-If you fork this repository, keep secrets out of a tracked file. Either use
-your platform's secret store, or `git update-index --skip-worktree config.env`
-so your copy stops being tracked.
+If you fork this repository, keep secrets out of a tracked file. Use your
+platform's secret store where one is available. For a private, single-host
+checkout, `git update-index --skip-worktree config.env` can reduce accidental
+staging, but it does not make the file a secret store or prevent a forced add.
+Keep the checkout private, restrict the file with `chmod 600 config.env`, and
+use an untracked deployment configuration or a real secret store for shared
+and CI checkouts.
 
 ## Relying parties
 

@@ -88,6 +88,7 @@ the exception, and it is not a licence to widen it.
   files rather than introducing a different one.
 - No personal names or identifying information: this is a public repository.
   Use "Jamie Taylor" as a placeholder, matching the code repository.
+- Use and direct human operators to a `questions.md` in the root if anything needs clarifying.
 
 ## Keeping in step with the software
 

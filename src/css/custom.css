@@ -77,3 +77,21 @@
   font-size: 0.9rem;
   padding: 0.2rem 0;
 }
+
+/* The navigation labels need more room than Infima's default 996px breakpoint
+   provides. Use the sidebar menu before the links begin to crowd together. */
+@media (max-width: 1249px) {
+  .navbar__toggle {
+    display: inherit;
+  }
+
+  .navbar__item {
+    display: none;
+  }
+}
+
+@media (min-width: 500px) {
+    .navbar__search-input {
+        width: 11rem;
+    }
+}

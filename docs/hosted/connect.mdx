@@ -71,6 +71,12 @@ You get back an `id_token` and a short-lived access token. Verify the
 and the `nonce` you sent. Any competent library does this for you. See
 [tokens and claims](./tokens-and-claims.md) for what is inside.
 
+By default, an omitted or blank `prompt` asks the person to confirm the account
+SAG will use, even when they already have a session. Send `prompt=none`
+explicitly only when your application requires a transparent response; SAG
+returns `login_required` rather than showing a page when it cannot complete
+silently.
+
 **Redirect URIs are matched exactly.** No prefixes, no wildcards. OAuth 2.1
 removed loose matching because every variant of it has been used to send an
 authorisation code to somebody else's page. The one exception is the loopback

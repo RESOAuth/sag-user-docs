@@ -40,11 +40,17 @@ see [ADR 0007](https://github.com/RESOAuth/smart-access-gateway/blob/main/docs/a
 
 ### Cloudflare
 
-Uncomment the three blocks in `adapters/cloudflare/wrangler.toml`:
+Add these two values to the existing `[vars]` table in
+`adapters/cloudflare/wrangler.toml`. Do not add a second `[vars]` table:
 
 ```toml
-[vars]
 STATE_STORE_BACKEND = "cf-durable-object"
+REQUIRE_STATE_STORE = "true"
+```
+
+Then add the Durable Object binding and migration:
+
+```toml
 
 [[durable_objects.bindings]]
 name = "SAG_STATE"
@@ -81,6 +87,7 @@ aws dynamodb update-time-to-live --table-name sag-state \
 STATE_STORE_BACKEND=dynamodb
 STATE_STORE_TABLE=sag-state
 STATE_STORE_REGION=eu-west-2
+REQUIRE_STATE_STORE=true
 ```
 
 The function's role needs `dynamodb:PutItem` and `dynamodb:UpdateItem` on that

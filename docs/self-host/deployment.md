@@ -9,7 +9,10 @@ description: "One core, thin adapters. The same configuration variables mean the
 One core, thin adapters. The same configuration variables mean the same thing
 everywhere. Whichever platform, two things are worth doing before you take
 traffic: configure a [state store](state-and-limits.md), and put a rate
-limiting rule in front of `/authorize`.
+limiting rule in front of `/authorize`. Once a state store is configured, set
+`REQUIRE_STATE_STORE=true` as well: a later deployment that loses its store
+configuration must refuse to start, not quietly lose single-use codes and OTP
+send limits.
 
 ## Before any deployment
 
@@ -18,12 +21,19 @@ npm run keygen                          # ES256 and a master secret
 npm run keygen -- --alg ES256,ML-DSA-44 # and a post-quantum key alongside
 ```
 
+At a real hostname, set every value below once and keep it in a secret store.
+`npm run keygen` supplies `SAG_SECRET` and, where a local key is used, the
+private JWK. Generate `SUBJECT_SALT` separately with `openssl rand -base64 32`.
+It is required even when subjects are public, and changing it later gives every
+person a new `sub`.
+
 At minimum:
 
 ```sh
 SAG_ISSUER=https://id.example.com
 SAG_SECRET=<from keygen>
-SIGNING_PRIVATE_JWK=<from keygen>
+SUBJECT_SALT=<openssl rand -base64 32, generated once>
+SIGNING_PRIVATE_JWK=<from keygen, with a local signer or the Cloudflare HSM>
 EMAIL_PROVIDER=ses            # or notify, mailchannels, smtp, cloudflare
 EMAIL_FROM=Sign in <no-reply@id.example.com>
 ```
@@ -35,25 +45,37 @@ hostname, and refuses an `http` issuer outright.
 
 Workers have no asymmetric key service, so the signing key lives in a second
 Worker reached only over a service binding - a small private HSM. Deploy it
-first:
+first. The HSM Worker must have no route and no `workers.dev` subdomain: the
+service binding is its only intended entry point.
 
 ```sh
 wrangler deploy --config adapters/cloudflare/wrangler.hsm.toml
 wrangler deploy --config adapters/cloudflare/wrangler.toml
 ```
 
-Secrets go in with `wrangler secret put`, never in the TOML:
+Secrets go in with `wrangler secret put`, never in the TOML. Generate a
+separate high-entropy `HSM_SHARED_SECRET` with `openssl rand -base64 48`, and
+enter the same value at both prompts. The private signing JWK belongs only in
+the HSM Worker, not in the public-facing Worker:
 
 ```sh
-wrangler secret put SAG_SECRET
-wrangler secret put HSM_SHARED_SECRET     # must match the HSM Worker's copy
-wrangler secret put MAILCHANNELS_API_KEY
+# Main Worker
+wrangler secret put SAG_SECRET --config adapters/cloudflare/wrangler.toml
+wrangler secret put SUBJECT_SALT --config adapters/cloudflare/wrangler.toml
+wrangler secret put HSM_SHARED_SECRET --config adapters/cloudflare/wrangler.toml
+wrangler secret put MAILCHANNELS_API_KEY --config adapters/cloudflare/wrangler.toml
+
+# Private HSM Worker
+wrangler secret put HSM_SHARED_SECRET --config adapters/cloudflare/wrangler.hsm.toml
+wrangler secret put SIGNING_PRIVATE_JWK --config adapters/cloudflare/wrangler.hsm.toml
 ```
 
 Recommended extras:
 
-- **State store**: Durable Objects. Uncomment the three blocks in
-  `wrangler.toml`; see [State and limits](state-and-limits.md).
+- **State store**: Durable Objects. Add `STATE_STORE_BACKEND` and
+  `REQUIRE_STATE_STORE` to the existing `[vars]` table, then add the Durable
+  Object binding and migration. Do not create a second `[vars]` table. See
+  [State and limits](state-and-limits.md).
 - **Rate limiting**: a Cloudflare rate limiting rule on `/authorize*`, and a
   stricter one on `POST /authorize/email` and `/authorize/resend`.
 - **Relying parties**: a KV namespace bound as `SAG_CLIENTS` when there are
@@ -108,9 +130,11 @@ curl -s https://id.example.com/.well-known/openid-configuration | jq
 
 `/alive` is an unconditional `200`, there to say a process is listening at
 all. `/healthz` reports the signing backend, which algorithms are really
-available, whether the state store is there, and every warning the
-configuration raised. [Operations](operations.md) explains how to read it,
-how to rotate secrets and keys, and what to do after a suspected compromise.
+available, and safe configuration warnings. It deliberately does not report
+whether the state store is configured, because that would expose which replay
+and rate-limit defences are absent. [Operations](operations.md) explains how
+to read it, how to rotate secrets and keys, and what to do after a suspected
+compromise.
 
 ## More than one instance behind one issuer
 

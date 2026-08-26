@@ -51,21 +51,30 @@ npm run keygen -- --secret-only
 ## Rotating the signing key
 
 Different from the master secret, and slower, because relying parties cache the
-JWKS.
+JWKS. A no-interruption overlap is currently possible only when the replacement
+uses a different supported signing algorithm which every relying party can
+accept.
+SAG has one active private key per algorithm; it does **not** support an
+overlap of two ES256 keys, or two keys of any other one algorithm.
 
-1. **Publish both.** Add the new key as an additional algorithm, or configure a
-   second key of the same algorithm. Both appear in `/jwks.json`, and the old
-   one stays primary. Relying parties pick keys by `kid`, so nothing breaks.
+1. **Publish both.** Add the new algorithm and key through
+   `SIGNING_ADDITIONAL_ALGS`. Both appear in `/jwks.json`, and the old one
+   stays primary. Relying parties pick keys by `kid`, so nothing breaks.
 2. **Wait for the JWKS cache to turn over.** SAG serves it with a five minute
    cache, but a relying party's own library may cache for much longer. An hour
    is comfortable; a day is safe.
-3. **Make the new key primary.** New `id_token`s are signed with it. Anything
-   already issued still verifies, because the old key is still published.
+3. **Make the new algorithm primary.** New `id_token`s are signed with it.
+   Keep the old algorithm configured as an additional one, so anything already
+   issued still verifies.
 4. **Retire the old key** once nothing signed by it can still be within its
    lifetime - `ID_TOKEN_TTL` plus a margin.
 
 Never do steps 1 and 3 in one deployment: a relying party with a cached JWKS
 that does not yet contain the new key will reject every token until it refetches.
+
+For an unavoidable same-algorithm replacement, plan for that cache interruption
+and test it with the relying parties concerned. This is a current product
+limitation, not an operator mistake.
 
 ## Warning with SUBJECT_SALT
 
