@@ -114,18 +114,19 @@ maintained only here.
 
 ## Deployment
 
-Pushing to `main` builds and publishes to Cloudflare Pages, which is
-connected directly to this repository via the Cloudflare dashboard's git
-integration. The build command is `npm run build`, and the output directory
-is `build`, both mirrored in [`wrangler.jsonc`](wrangler.jsonc) as
-`pages_build_output_dir` so Cloudflare's build system always has an assets
-directory to publish.
+Pushing to `main` builds and publishes to Cloudflare Workers (static assets),
+via Cloudflare's Workers Builds git integration connected directly to this
+repository. Pull requests get their own preview at
+`<branch>-sag-user-docs.<subdomain>.workers.dev`. The build command is
+`npm run build`, and the output directory is `build`, mirrored in
+[`wrangler.jsonc`](wrangler.jsonc) as `assets.directory` so `wrangler deploy`
+always has an assets directory to publish.
 
 The site URL lives in two places that must agree: the `SITE_URL` and
-`SITE_BASE_URL` environment variables (set in the Cloudflare Pages project,
+`SITE_BASE_URL` environment variables (set in the Cloudflare Workers project,
 if overriding the defaults), and the defaults at the top of
 `docusaurus.config.ts`. For a custom domain, set both to the new host with a
-base URL of `/`, and attach the domain to the Cloudflare Pages project.
+base URL of `/`, and attach the domain to the Cloudflare Workers project.
 
 ## Style
 
