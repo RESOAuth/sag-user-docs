@@ -114,16 +114,18 @@ maintained only here.
 
 ## Deployment
 
-Pushing to `main` builds and publishes to GitHub Pages via
-[`.github/workflows/deploy.yml`](.github/workflows/deploy.yml). Enable Pages
-for the repository with "GitHub Actions" as the source; there is no `gh-pages`
-branch.
+Pushing to `main` builds and publishes to Cloudflare Pages, which is
+connected directly to this repository via the Cloudflare dashboard's git
+integration. The build command is `npm run build`, and the output directory
+is `build`, both mirrored in [`wrangler.jsonc`](wrangler.jsonc) as
+`pages_build_output_dir` so Cloudflare's build system always has an assets
+directory to publish.
 
 The site URL lives in two places that must agree: the `SITE_URL` and
-`SITE_BASE_URL` environment variables in the deploy workflow, and the defaults
-at the top of `docusaurus.config.ts`. For a custom domain, set both to the new
-host with a base URL of `/`, and add a `static/CNAME` file containing the
-hostname.
+`SITE_BASE_URL` environment variables (set in the Cloudflare Pages project,
+if overriding the defaults), and the defaults at the top of
+`docusaurus.config.ts`. For a custom domain, set both to the new host with a
+base URL of `/`, and attach the domain to the Cloudflare Pages project.
 
 ## Style
 
