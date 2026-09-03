@@ -28,7 +28,7 @@ const config: Config = {
   url,
   baseUrl,
   organizationName: 'RESOAuth',
-  projectName: 'sag-docs',
+  projectName: 'sag-user-docs',
   trailingSlash: false,
 
   onBrokenLinks: 'throw',
@@ -64,7 +64,7 @@ const config: Config = {
         docs: {
           routeBasePath: '/',
           sidebarPath: './sidebars.ts',
-          editUrl: 'https://github.com/RESOAuth/sag-docs/edit/main/',
+          editUrl: 'https://github.com/RESOAuth/sag-user-docs/edit/main/',
           showLastUpdateTime: true,
 
           // Versioning, Bootstrap-style. `current` is the unreleased work in
@@ -105,7 +105,7 @@ const config: Config = {
             // Bump the id whenever the text changes, or a reader who dismissed
             // the previous notice never sees the new one.
             id: `release-${currentRelease}`,
-            content: `SAG ${currentRelease} is the current release. Documentation for unreleased work is under <a href="${baseUrl}next/">Next</a>.`,
+            content: `SAG ${currentRelease} is the current release. Upgrading from an earlier one has <a href="${baseUrl}self-host/upgrading">a few things to check</a>. Unreleased work is under <a href="${baseUrl}next/">Next</a>.`,
             backgroundColor: 'var(--sag-announcement-bg)',
             textColor: 'var(--sag-announcement-fg)',
             isCloseable: true,
@@ -147,6 +147,7 @@ const config: Config = {
           items: [
             { label: 'Quickstart', to: '/self-host/quickstart' },
             { label: 'Deployment', to: '/self-host/deployment' },
+            { label: 'Upgrading', to: '/self-host/upgrading' },
             { label: 'Configuration reference', to: '/reference/configuration' },
           ],
         },
@@ -165,6 +166,21 @@ const config: Config = {
               href: 'https://github.com/RESOAuth/smart-access-gateway/tree/main/docs',
             },
             { label: 'SAG on GitHub', href: 'https://github.com/RESOAuth/smart-access-gateway' },
+            {
+              label: 'Contributing',
+              href: 'https://github.com/RESOAuth/smart-access-gateway/blob/main/CONTRIBUTING.md',
+            },
+            {
+              label: 'Reporting a vulnerability',
+              href: 'https://github.com/RESOAuth/smart-access-gateway/blob/main/SECURITY.md',
+            },
+            {
+              // OpenSSF Best Practices evidence, kept next to the code so
+              // there is one copy. Add the badge image here once the project
+              // has an entry at bestpractices.dev to link to.
+              label: 'Project practices',
+              href: 'https://github.com/RESOAuth/smart-access-gateway/blob/main/docs/best-practices.md',
+            },
             { label: 'RESOAuth', href: 'https://resoauth.dev' },
           ],
         },
