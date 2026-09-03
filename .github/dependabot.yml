@@ -5,12 +5,22 @@ updates:
     schedule:
       interval: "weekly"
     groups:
+      # Groups only cover version updates unless a group says otherwise, so
+      # security fixes need their own. Without this, one advisory per package
+      # means one pull request per package, and a Docusaurus site pulls most
+      # of its tree in transitively.
+      npm-security:
+        applies-to: security-updates
+        patterns:
+          - "*"
       docusaurus:
         patterns:
           - "@docusaurus/*"
           - "@mdx-js/*"
       dev-dependencies:
         dependency-type: "development"
+      production-dependencies:
+        dependency-type: "production"
     open-pull-requests-limit: 10
 
   - package-ecosystem: "github-actions"
@@ -18,6 +28,10 @@ updates:
     schedule:
       interval: "weekly"
     groups:
+      actions-security:
+        applies-to: security-updates
+        patterns:
+          - "*"
       actions:
         patterns:
           - "*"
