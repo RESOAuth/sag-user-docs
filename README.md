@@ -77,16 +77,24 @@ The site is keyed by SAG release, in the way Bootstrap's documentation is.
 Readers get a version picker, and an old version says so at the top of every
 page.
 
-When SAG cuts a release:
+Versions are full semver, `x.y.z`, matching SAG's own release numbers. When
+SAG cuts a minor or major release:
 
 ```sh
-npm run cut-version -- 0.2
+npm run cut-version -- 0.2.0
 ```
 
-That snapshots `docs/` into `versioned_docs/version-0.2/` and adds it to
+That snapshots `docs/` into `versioned_docs/version-0.2.0/` and adds it to
 `versions.json`. `docusaurus.config.ts` reads that file, so nothing else needs
-editing: 0.2 becomes the default, `docs/` goes back to being the unreleased
-`/next`, and 0.1 starts serving a "no longer maintained" banner on its own.
+editing: 0.2.0 becomes the default, `docs/` goes back to being the unreleased
+`/next`, and 0.1.0 starts serving a "no longer maintained" banner on its own.
+
+A patch release corrects the version already out rather than adding another,
+so it renames that version's files instead of snapshotting:
+
+```sh
+npm run bump-patch -- 0.2.1
+```
 
 Update the `announcementBar` text in `docusaurus.config.ts` if you want to say
 something about the release. Its `id` is derived from the version, so readers
