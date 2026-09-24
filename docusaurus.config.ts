@@ -88,7 +88,13 @@ const config: Config = {
         },
         blog: false,
         theme: { customCss: './src/css/custom.css' },
-        sitemap: { lastmod: 'date', changefreq: null, priority: null },
+        sitemap: {
+          lastmod: 'date',
+          changefreq: null,
+          priority: null,
+          // The search page declares noindex and should not be submitted for indexing.
+          ignorePatterns: ['/search'],
+        },
       } satisfies Preset.Options,
     ],
   ],
