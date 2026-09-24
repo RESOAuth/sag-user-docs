@@ -1,0 +1,77 @@
+---
+sidebar_label: "Endpoints"
+sidebar_position: 6
+description: "Every HTTP route SAG serves, what it is for, and which ones are a stable interface rather than an implementation detail."
+---
+
+import Endpoints from '@site/docs/_snippets/_endpoints.md';
+
+# Endpoints
+
+Paths are relative to the issuer. On the hosted gateway that is
+`https://auth.resoauth.cloud`; on your own deployment it is whatever
+`SAG_ISSUER` says, including any base path.
+
+<Endpoints />
+
+## Which of these are stable
+
+`/authorize`, `/token`, `/userinfo`, `/logout`, the discovery documents, and
+the JWKS are the interface. They follow OpenID Connect and RFC 8414, and a
+change to them is a breaking change.
+
+The `/authorize/*` form targets and `/static/*` are internal. They are the
+sign-in screens talking to themselves, and they may change in any release.
+
+Do not hard-code any of them. Read the discovery document, which is the point
+of having one.
+
+## The discovery document describes the instance
+
+This is worth stating on its own, because it catches people out.
+
+SAG advertises what the running instance can actually do, not what the
+software supports. No `profile` scope when nothing could fill it. No federated
+`acr` value without an upstream configured. No signing algorithm without a key
+behind it.
+
+So a claim, scope, or algorithm missing from discovery is missing because this
+deployment cannot provide it. Reading discovery at startup and configuring
+from it is not defensive programming here; it is the intended way to use it.
+
+Extensions SAG publishes under its own namespace:
+
+| Key | Meaning |
+| --- | --- |
+| `urn:sag:require_pkce` | Always `true`. PKCE is not optional |
+| `urn:sag:post_quantum_signing_supported` | Whether a post-quantum key is published |
+| `urn:sag:post_quantum_algs` | Which post-quantum algorithms, if any |
+| `urn:sag:client_registration` | How this instance accepts relying parties |
+| `urn:sag:protected_resources` | Resources the access token is good for. `/userinfo`, and nothing else |
+
+## `/alive` versus `/healthz`
+
+These answer different questions, and using the wrong one causes real
+incidents.
+
+**`/alive`** returns `200` and the body `ok`. Nothing else. It is handled
+before configuration is even parsed, so it answers `200` on an instance that
+is misconfigured and cannot sign anybody in. Use it for a container liveness
+probe, and for load-balancer target health.
+
+**`/healthz`** returns JSON and answers whether this instance can actually
+sign somebody in. It reports the running `version`, the issuer, the signing
+setup, warnings, which upstream providers are configured and how many domains
+each covers, whether email codes are on, how relying parties are described,
+and the state of any peer JWKS federation.
+
+Point failover checks at `/healthz`. Pointing them at `/alive` means traffic
+keeps arriving at an instance that will fail every sign-in.
+
+`/healthz` deliberately will not tell you whether a state store is configured,
+name any upstream domain, or identify any relying party. Those would turn a
+public endpoint into a description of who uses the service. Operators get that
+from the start-up banner and the logs instead.
+
+Reading both is covered in [operations](../self-host/operations.md), and the
+multi-region routing case in [multi-region](../self-host/multi-region.md).

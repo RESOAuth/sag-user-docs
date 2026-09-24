@@ -114,7 +114,7 @@ table, and `src/endpoints/` is one file per route.
 ## Versioning
 
 Versions are full semver, `x.y.z`, matching SAG's own release numbers. The
-current release is 0.1.0.
+current release is the first entry in `versions.json`.
 
 A **minor or major** release is a new cut:
 

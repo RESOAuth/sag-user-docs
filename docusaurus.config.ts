@@ -140,12 +140,15 @@ const config: Config = {
             { label: 'The hosted gateway', to: '/hosted/' },
             { label: 'Connect an application', to: '/hosted/connect' },
             { label: 'Client ID Metadata Documents', to: '/hosted/client-id-metadata' },
+            { label: 'Privacy notice', to: '/hosted/privacy-notice' },
+            { label: 'Terms of service', to: '/hosted/terms-of-service' },
           ],
         },
         {
           title: 'Run it',
           items: [
             { label: 'Quickstart', to: '/self-host/quickstart' },
+            { label: 'Local identities', to: '/self-host/local-identities' },
             { label: 'Deployment', to: '/self-host/deployment' },
             { label: 'Upgrading', to: '/self-host/upgrading' },
             { label: 'Configuration reference', to: '/reference/configuration' },
