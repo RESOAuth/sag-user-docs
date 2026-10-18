@@ -11,9 +11,8 @@ A Client ID Metadata Document, or CIMD, removes the registration step. Your
 describing your application. SAG fetches it when your application first
 appears.
 
-Nothing is registered anywhere, because the document's URL **is** the
-identity. Only somebody who controls that origin can change what your
-application claims to be.
+Nothing is registered with the gateway, because the document's URL **is** the
+identity.
 
 ## The shortest possible one
 
@@ -29,6 +28,22 @@ Serve this at `https://ledger.example.com/oauth-client`, with
 ```
 
 Then use that URL as your `client_id`. That is the entire onboarding process.
+
+## Generate a URL without serving the document yourself
+
+If you do not have a public endpoint for the JSON, use
+[Dynamic CIMD](https://dynamic-cimd.resoauth.cloud/). Edit the example metadata,
+select **Generate URL**, and use the resulting URL as your `client_id`. Your
+browser encodes the metadata in the URL. The service serves it as a document
+with `client_id` set to that exact URL. Its
+[source code](https://github.com/RESOAuth/dynamic-cimd) is public.
+
+The metadata is visible in the URL and to anyone who fetches it. Never include
+secrets or private keys. Anyone can generate a URL on this domain, so the
+domain alone does not mean RESOAuth has verified or endorsed the client.
+Changing the metadata creates a different URL and `client_id`. If you need to
+change the document while keeping the same client ID, serve it on an `https`
+domain you control.
 
 ## The rules
 

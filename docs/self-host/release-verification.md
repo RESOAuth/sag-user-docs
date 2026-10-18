@@ -40,7 +40,7 @@ the identity it supplies would trust the artefact to identify its own publisher.
 
 ```sh
 set -euo pipefail
-TAG='v0.3.0'
+TAG='v0.3.1'
 COMMIT='<approved-full-source-commit>'
 REPO='RESOAuth/smart-access-gateway'
 
